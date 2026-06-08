@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="The Stat - Your Matches. Your Stats. Your Legacy. Real-time cricket scoring, team management, and AI-powered player metrics.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="The Stat">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>The Stat — Cricket Scoring, Teams & AI Analytics</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Premium Brutalist Design System */
+    :root {
+      --primary-green: #1A6B00;
+      --primary-yellow: #F5C800;
+      --white: #FFFFFF;
+      --black: #0D0D0D;
+      --red: #FF4C4C;
+      --dark-grey: #151515;
+      --light-grey: #AAAAAA;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--primary-green);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--white);
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* Landing Container */
+    #landing-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Header / Logo Section */
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 60px;
+      padding-bottom: 20px;
+      border-bottom: 3px solid var(--black);
+    }
+
+    .logo {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary-yellow);
+      letter-spacing: 2px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-box {
+      width: 32px;
+      height: 32px;
+      background-color: var(--black);
+      border: 2px solid var(--primary-yellow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      margin-bottom: 60px;
+      max-width: 800px;
+    }
+
+    .hero h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 72px;
+      font-weight: 700;
+      color: var(--primary-yellow);
+      line-height: 0.95;
+      letter-spacing: -2px;
+      text-shadow: 4px 4px 0px var(--black);
+      margin-bottom: 24px;
+      text-transform: uppercase;
+    }
+
+    .hero p {
+      font-size: 20px;
+      line-height: 1.5;
+      color: var(--white);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 40px;
+      text-shadow: 2px 2px 0px var(--black);
+    }
+
+    /* CTAs */
+    .cta-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 16px 32px;
+      border: 3px solid var(--black);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-yellow {
+      background-color: var(--primary-yellow);
+      color: var(--black);
+      box-shadow: 5px 5px 0px var(--black);
+    }
+
+    .btn-yellow:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 7px 7px 0px var(--black);
+    }
+
+    .btn-yellow:active {
+      transform: translate(3px, 3px);
+      box-shadow: 2px 2px 0px var(--black);
+    }
+
+    .btn-black {
+      background-color: var(--black);
+      color: var(--white);
+      border-color: var(--primary-yellow);
+      box-shadow: 5px 5px 0px var(--primary-yellow);
+    }
+
+    .btn-black:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 7px 7px 0px var(--primary-yellow);
+    }
+
+    .btn-black:active {
+      transform: translate(3px, 3px);
+      box-shadow: 2px 2px 0px var(--primary-yellow);
+    }
+
+    /* Features Section */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 30px;
+      width: 100%;
+      margin-top: 40px;
+      margin-bottom: 80px;
+    }
+
+    .feature-card {
+      background-color: var(--black);
+      border: 3px solid var(--primary-yellow);
+      padding: 30px;
+      box-shadow: 8px 8px 0px var(--black);
+      transition: all 0.2s ease;
+    }
+
+    .feature-card:hover {
+      transform: translate(-4px, -4px);
+      box-shadow: 12px 12px 0px var(--black);
+    }
+
+    .feature-icon {
+      font-size: 36px;
+      margin-bottom: 20px;
+      display: inline-block;
+    }
+
+    .feature-card h3 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary-yellow);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .feature-card p {
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--light-grey);
+    }
+
+    /* Footer Section */
+    footer {
+      width: 100%;
+      text-align: center;
+      padding-top: 40px;
+      border-top: 3px solid var(--black);
+      font-size: 14px;
+      color: var(--light-grey);
+      margin-top: auto;
+    }
+
+    /* Loading Overlay */
+    #loading-indicator {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--primary-green);
+      z-index: 9999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .spinner {
+      width: 80px;
+      height: 80px;
+      border: 8px solid var(--black);
+      border-top: 8px solid var(--primary-yellow);
+      border-radius: 0; /* Brutalist shape */
+      animation: spin 1s linear infinite;
+      margin-bottom: 30px;
+    }
+
+    .loading-text {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary-yellow);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .loading-subtext {
+      font-size: 14px;
+      color: var(--white);
+      margin-top: 10px;
+      letter-spacing: 1px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    @media (max-width: 600px) {
+      .hero h1 {
+        font-size: 48px;
+      }
+      .hero p {
+        font-size: 16px;
+      }
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+
+  <script>
+    // Injected by flutter build
+    const serviceWorkerVersion = "2653808755";
+  </script>
+  <script src="flutter.js" defer></script>
+</head>
+<body>
+
+  <!-- LOADING OVERLAY -->
+  <div id="loading-indicator">
+    <div class="spinner"></div>
+    <div class="loading-text">BOOTING THE STAT</div>
+    <div class="loading-subtext">Compiling cricket modules...</div>
+  </div>
+
+  <!-- LANDING PAGE -->
+  <div id="landing-page">
+    <header>
+      <a href="#" class="logo">
+        <div class="logo-box">S</div>
+        THE STAT
+      </a>
+      <button class="btn btn-yellow" style="padding: 10px 20px; font-size: 14px;" onclick="launchWebApp()">
+        LAUNCH WEB APP
+      </button>
+    </header>
+
+    <section class="hero">
+      <h1>The Stat</h1>
+      <p>Your Matches. Your Stats. Your Legacy.</p>
+      
+      <div class="cta-buttons">
+        <a href="app-debug.apk" class="btn btn-yellow" download>
+          <!-- Android Downloader Icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          DOWNLOAD ANDROID APK
+        </a>
+        <button class="btn btn-black" onclick="launchWebApp()">
+          <!-- Web Login Icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+            <polyline points="10 17 15 12 10 7"></polyline>
+            <line x1="15" y1="12" x2="3" y2="12"></line>
+          </svg>
+          LOGIN TO WEB APP
+        </button>
+      </div>
+    </section>
+
+    <div class="features-grid">
+      <!-- Feature 1 -->
+      <div class="feature-card">
+        <div class="feature-icon">🏏</div>
+        <h3>Real-time Scoring</h3>
+        <p>Record your local gully or turf matches ball-by-ball. Supports runs off bat, extras (wides, no balls, byes, leg byes), run rotation, automatic over boundaries, and instant undo options.</p>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <h3>Team Management</h3>
+        <p>Build your ultimate squad. Create unique teams, generate shareable invite codes, and let players join instantly. Manage player roles, positions, and track full member lists.</p>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>AI Match Insights</h3>
+        <p>Unlock comprehensive performance analytics. After playing 10 matches, our advanced rules engine predicts batting strengths/weaknesses against specific bowler types and bowling attributes.</p>
+      </div>
+    </div>
+
+    <footer>
+      <p>&copy; 2026 The Stat. Built for cricket enthusiasts. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <!-- FLUTTER BOOTSTRAPPING SCRIPT -->
+  <script>
+    function launchWebApp() {
+      // 1. Show loader, hide landing page content
+      document.getElementById('landing-page').style.display = 'none';
+      document.getElementById('loading-indicator').style.display = 'flex';
+
+      // 2. Initialize Flutter Web engine
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          document.querySelector('.loading-text').innerText = 'Starting Engine...';
+          engineInitializer.initializeEngine().then(function(appRunner) {
+            document.querySelector('.loading-text').innerText = 'Initializing Views...';
+            appRunner.runApp();
+          });
+        }
+      });
+    }
+  </script>
+</body>
+</html>
