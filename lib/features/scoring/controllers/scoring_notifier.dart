@@ -47,22 +47,6 @@ class ScoringNotifier extends StateNotifier<MatchState?> {
   }) {
     final id = const Uuid().v4();
 
-    // Determine who bats first
-    String battingTeam = teamA;
-    String bowlingTeam = teamB;
-
-    if (tossWinner == 'teamA') {
-      if (tossChoice == 'bowl') {
-        battingTeam = teamB;
-        bowlingTeam = teamA;
-      }
-    } else {
-      if (tossChoice == 'bat') {
-        battingTeam = teamB;
-        bowlingTeam = teamA;
-      }
-    }
-
     final newMatch = MatchState(
       id: id,
       teamAName: teamA,
@@ -170,10 +154,6 @@ class ScoringNotifier extends StateNotifier<MatchState?> {
       nextNonStriker = temp;
     }
 
-    // 4. Innings limit check
-    final isTargetChased = current.currentInnings == 2 && 
-        (current.innings1Runs + 1 <= (current.innings1Runs + 1 - (current.innings1Runs - (current.balls.fold(0, (sum, b) => sum + b.totalRuns) + ball.totalRuns)))); 
-    
     // Better logic for chase completion:
     bool isChaseCompleted = false;
     if (current.currentInnings == 2) {

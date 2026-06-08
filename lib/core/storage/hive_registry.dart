@@ -32,6 +32,7 @@ class HiveRegistry {
 
   static Future<void> deleteMatch(String id) async {
     await matchesBox.delete(id);
+    SupabaseSyncService.deleteMatch(id);
   }
 
   static Future<void> clearAll() async {

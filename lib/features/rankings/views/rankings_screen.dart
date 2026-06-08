@@ -118,7 +118,7 @@ class RankingsScreen extends StatelessWidget {
       return '';
     }).toList();
 
-    return Container(
+    return SizedBox(
       height: 160,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -143,7 +143,7 @@ class RankingsScreen extends StatelessWidget {
         Text(
           _shortenName(name),
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
             color: AppColors.white,
             fontFamily: 'DM Sans',
             fontSize: 11,

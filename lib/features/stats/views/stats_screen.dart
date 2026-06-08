@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../core/theme.dart';
 import '../../../core/storage/hive_registry.dart';
 import '../../scoring/models/match_state.dart';
-import '../../scoring/models/ball_record.dart';
 
 class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key});
@@ -93,16 +92,16 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           color: AppColors.black,
-          child: Row(
+          child: const Row(
             children: [
-              const SizedBox(width: 28, child: Text('#', style: _hStyle)),
-              const SizedBox(width: 8),
-              const Expanded(child: Text('PLAYER', style: _hStyle)),
-              const SizedBox(width: 40, child: Text('M', textAlign: TextAlign.center, style: _hStyle)),
-              const SizedBox(width: 40, child: Text('R', textAlign: TextAlign.center, style: _hStyle)),
-              const SizedBox(width: 44, child: Text('AVG', textAlign: TextAlign.center, style: _hStyle)),
-              const SizedBox(width: 44, child: Text('SR', textAlign: TextAlign.center, style: _hStyle)),
-              const SizedBox(width: 36, child: Text('HS', textAlign: TextAlign.center, style: _hStyle)),
+              SizedBox(width: 28, child: Text('#', style: _hStyle)),
+              SizedBox(width: 8),
+              Expanded(child: Text('PLAYER', style: _hStyle)),
+              SizedBox(width: 40, child: Text('M', textAlign: TextAlign.center, style: _hStyle)),
+              SizedBox(width: 40, child: Text('R', textAlign: TextAlign.center, style: _hStyle)),
+              SizedBox(width: 44, child: Text('AVG', textAlign: TextAlign.center, style: _hStyle)),
+              SizedBox(width: 44, child: Text('SR', textAlign: TextAlign.center, style: _hStyle)),
+              SizedBox(width: 36, child: Text('HS', textAlign: TextAlign.center, style: _hStyle)),
             ],
           ),
         ),
@@ -173,17 +172,17 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           color: AppColors.black,
-          child: Row(
+          child: const Row(
             children: [
-              const SizedBox(width: 28, child: Text('#', style: _hStyle)),
-              const SizedBox(width: 8),
-              const Expanded(child: Text('PLAYER', style: _hStyle)),
-              const SizedBox(width: 36, child: Text('M', textAlign: TextAlign.center, style: _hStyle)),
-              const SizedBox(width: 36, child: Text('O', textAlign: TextAlign.center, style: _hStyle)),
-              const SizedBox(width: 36, child: Text('R', textAlign: TextAlign.center, style: _hStyle)),
-              const SizedBox(width: 36, child: Text('W', textAlign: TextAlign.center, style: _hStyle)),
-              const SizedBox(width: 44, child: Text('AVG', textAlign: TextAlign.center, style: _hStyle)),
-              const SizedBox(width: 44, child: Text('ER', textAlign: TextAlign.center, style: _hStyle)),
+              SizedBox(width: 28, child: Text('#', style: _hStyle)),
+              SizedBox(width: 8),
+              Expanded(child: Text('PLAYER', style: _hStyle)),
+              SizedBox(width: 36, child: Text('M', textAlign: TextAlign.center, style: _hStyle)),
+              SizedBox(width: 36, child: Text('O', textAlign: TextAlign.center, style: _hStyle)),
+              SizedBox(width: 36, child: Text('R', textAlign: TextAlign.center, style: _hStyle)),
+              SizedBox(width: 36, child: Text('W', textAlign: TextAlign.center, style: _hStyle)),
+              SizedBox(width: 44, child: Text('AVG', textAlign: TextAlign.center, style: _hStyle)),
+              SizedBox(width: 44, child: Text('ER', textAlign: TextAlign.center, style: _hStyle)),
             ],
           ),
         ),
@@ -281,8 +280,11 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
         final isDismissed = allBalls.any((b) => b.batterId == batter && b.isWicket && b.wicketType != 'run_out');
         if (isDismissed) stats[batter]!.innings++;
         if (inningRuns > stats[batter]!.highScore) stats[batter]!.highScore = inningRuns;
-        if (inningRuns >= 100) stats[batter]!.hundreds++;
-        else if (inningRuns >= 50) stats[batter]!.fifties++;
+        if (inningRuns >= 100) {
+          stats[batter]!.hundreds++;
+        } else if (inningRuns >= 50) {
+          stats[batter]!.fifties++;
+        }
       }
     }
 

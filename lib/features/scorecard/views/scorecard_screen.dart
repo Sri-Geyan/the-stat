@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme.dart';
-import '../../../core/storage/hive_registry.dart';
 import '../../scoring/models/match_state.dart';
 import '../../scoring/models/ball_record.dart';
 

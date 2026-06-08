@@ -41,4 +41,13 @@ class SupabaseSyncService {
       debugPrint('Failed to sync match ${match.id} to Supabase: $e');
     }
   }
+
+  static Future<void> deleteMatch(String matchId) async {
+    try {
+      await _supabase.from('matches').delete().eq('id', matchId);
+      debugPrint('Successfully deleted match $matchId from Supabase');
+    } catch (e) {
+      debugPrint('Failed to delete match $matchId from Supabase: $e');
+    }
+  }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme.dart';
-import '../../../core/storage/hive_registry.dart';
 
 class TournamentsScreen extends StatefulWidget {
   const TournamentsScreen({super.key});
@@ -273,8 +272,8 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 color: AppColors.black,
-                child: Row(
-                  children: const [
+                child: const Row(
+                  children: [
                     Expanded(child: Text('TEAM', style: TextStyle(color: AppColors.primaryYellow, fontFamily: 'DM Sans', fontSize: 10, fontWeight: FontWeight.bold))),
                     SizedBox(width: 28, child: Text('M', textAlign: TextAlign.center, style: TextStyle(color: AppColors.primaryYellow, fontFamily: 'DM Sans', fontSize: 10, fontWeight: FontWeight.bold))),
                     SizedBox(width: 28, child: Text('W', textAlign: TextAlign.center, style: TextStyle(color: AppColors.primaryYellow, fontFamily: 'DM Sans', fontSize: 10, fontWeight: FontWeight.bold))),

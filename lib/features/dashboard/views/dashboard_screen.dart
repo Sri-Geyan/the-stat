@@ -97,12 +97,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   if (val != null) {
                                     setModalState(() {
                                       _format = val;
-                                      if (val == 'Gully T5') _overs = 5;
-                                      else if (val == 'Gully T8') _overs = 8;
-                                      else if (val == 'Box Cricket T6') _overs = 6;
-                                      else if (val == 'Corporate T10') _overs = 10;
-                                      else if (val == 'T20') _overs = 20;
-                                      else _overs = 50;
+                                      if (val == 'Gully T5') {
+                                        _overs = 5;
+                                      } else if (val == 'Gully T8') {
+                                        _overs = 8;
+                                      } else if (val == 'Box Cricket T6') {
+                                        _overs = 6;
+                                      } else if (val == 'Corporate T10') {
+                                        _overs = 10;
+                                      } else if (val == 'T20') {
+                                        _overs = 20;
+                                      } else {
+                                        _overs = 50;
+                                      }
                                     });
                                   }
                                 },
@@ -358,6 +365,69 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
+  void _confirmDeleteMatch(MatchState match) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: AppColors.black,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero,
+            side: BorderSide(color: AppColors.primaryYellow, width: 2),
+          ),
+          title: Row(
+            children: [
+              const Icon(Icons.warning, color: AppColors.red),
+              const SizedBox(width: 10),
+              Text(
+                'DELETE MATCH',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: AppColors.red),
+              ),
+            ],
+          ),
+          content: Text(
+            'Are you sure you want to delete the match between ${match.teamAName} and ${match.teamBName}? This will permanently delete all records of this match.',
+            style: const TextStyle(
+              color: AppColors.white,
+              fontFamily: 'DM Sans',
+            ),
+          ),
+          actions: [
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.white,
+                side: const BorderSide(color: AppColors.white, width: 1.5),
+              ),
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('CANCEL'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.red,
+                foregroundColor: AppColors.white,
+                side: const BorderSide(color: AppColors.black, width: 1.5),
+              ),
+              onPressed: () async {
+                Navigator.pop(ctx);
+                await HiveRegistry.deleteMatch(match.id);
+                if (mounted) {
+                  setState(() {});
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Match deleted successfully.'),
+                      backgroundColor: AppColors.primaryGreen,
+                    ),
+                  );
+                }
+              },
+              child: const Text('DELETE'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final matches = HiveRegistry.getAllMatches();
@@ -600,15 +670,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      match.format.toUpperCase(),
-                      style: const TextStyle(
-                        color: AppColors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'DM Sans',
-                        letterSpacing: 1,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          match.format.toUpperCase(),
+                          style: const TextStyle(
+                            color: AppColors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'DM Sans',
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => _confirmDeleteMatch(match),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                            child: Icon(Icons.delete, color: AppColors.red, size: 16),
+                          ),
+                        ),
+                      ],
                     ),
                     if (isLive)
                       Row(
