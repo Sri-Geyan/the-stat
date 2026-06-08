@@ -3,9 +3,9 @@
     "short_name": "the_stat",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": ""A new Flutter project."",
+    "background_color": "#1A6B00",
+    "theme_color": "#F5C800",
+    "description": "A new Flutter project.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

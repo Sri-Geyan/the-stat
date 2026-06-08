@@ -48,6 +48,17 @@ dev_dependencies:
   flutter_lints: ^2.0.0
   hive_generator: ^2.0.1
   build_runner: ^2.4.8
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "icon.png"
+  web:
+    generate: true
+    image_path: "icon.png"
+    background_color: "#1A6B00"
+    theme_color: "#F5C800"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
