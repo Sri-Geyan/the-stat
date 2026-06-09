@@ -30,6 +30,9 @@ class MatchState {
   final String winner;
   final String margin;
 
+  final List<String> teamAPlayers;
+  final List<String> teamBPlayers;
+
   MatchState({
     required this.id,
     required this.teamAName,
@@ -50,6 +53,8 @@ class MatchState {
     required this.balls,
     required this.winner,
     required this.margin,
+    required this.teamAPlayers,
+    required this.teamBPlayers,
   });
 
   // Derived getters for current active innings
@@ -96,6 +101,8 @@ class MatchState {
     List<BallRecord>? balls,
     String? winner,
     String? margin,
+    List<String>? teamAPlayers,
+    List<String>? teamBPlayers,
   }) {
     return MatchState(
       id: id ?? this.id,
@@ -117,6 +124,8 @@ class MatchState {
       balls: balls ?? this.balls,
       winner: winner ?? this.winner,
       margin: margin ?? this.margin,
+      teamAPlayers: teamAPlayers ?? this.teamAPlayers,
+      teamBPlayers: teamBPlayers ?? this.teamBPlayers,
     );
   }
 
@@ -141,6 +150,8 @@ class MatchState {
       'balls': balls.map((b) => b.toMap()).toList(),
       'winner': winner,
       'margin': margin,
+      'teamAPlayers': teamAPlayers,
+      'teamBPlayers': teamBPlayers,
     };
   }
 
@@ -169,6 +180,8 @@ class MatchState {
           .toList(),
       winner: map['winner'] ?? '',
       margin: map['margin'] ?? '',
+      teamAPlayers: (map['teamAPlayers'] as List? ?? []).map((e) => e.toString()).toList(),
+      teamBPlayers: (map['teamBPlayers'] as List? ?? []).map((e) => e.toString()).toList(),
     );
   }
 }

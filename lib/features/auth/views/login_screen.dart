@@ -31,6 +31,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _handleAnonymousSignIn() async {
+    setState(() => _isLoading = true);
+    final success = await ref.read(authNotifierProvider).signInAnonymously();
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (!success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to sign in as guest. Please try again.'),
+            backgroundColor: AppColors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,32 +111,64 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         child: CircularProgressIndicator(color: AppColors.primaryYellow),
                       )
                     else
-                      ElevatedButton(
-                        onPressed: _handleGoogleSignIn,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.white,
-                          foregroundColor: AppColors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10), // Required by brand spec
-                            side: const BorderSide(color: AppColors.black, width: 2),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          ElevatedButton(
+                            onPressed: _handleGoogleSignIn,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.white,
+                              foregroundColor: AppColors.black,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10), // Required by brand spec
+                                  side: const BorderSide(color: AppColors.black, width: 2),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                // Simple placeholder icon for Google
+                                const Icon(Icons.g_mobiledata, size: 32, color: AppColors.black),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'SIGN IN WITH GOOGLE',
+                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                    color: AppColors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          elevation: 0,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Simple placeholder icon for Google
-                            const Icon(Icons.g_mobiledata, size: 32, color: AppColors.black),
-                            const SizedBox(width: 8),
-                            Text(
-                              'SIGN IN WITH GOOGLE',
-                              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                color: AppColors.black,
+                          const SizedBox(height: 12),
+                          OutlinedButton(
+                            key: const Key('guest_bypass_btn'),
+                            onPressed: _handleAnonymousSignIn,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.primaryYellow,
+                              side: const BorderSide(color: AppColors.primaryYellow, width: 1.5),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.zero,
                               ),
                             ),
-                          ],
-                        ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.person_outline, size: 20, color: AppColors.primaryYellow),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'CONTINUE AS GUEST',
+                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                    color: AppColors.primaryYellow,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                   ],
                 ),

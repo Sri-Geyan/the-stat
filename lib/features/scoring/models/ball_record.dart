@@ -37,6 +37,7 @@ class BallRecord {
     if (extraType == 'no_ball') return '${extras > 1 ? extras : ""}Nb';
     if (extraType == 'bye') return '${runs > 0 ? runs : ""}B';
     if (extraType == 'leg_bye') return '${runs > 0 ? runs : ""}Lb';
+    if (extraType == 'free_hit') return '${runs > 0 ? runs : ""}FH';
     return runs.toString();
   }
 

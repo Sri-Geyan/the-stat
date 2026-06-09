@@ -59,6 +59,16 @@ class AuthNotifier {
       return false;
     }
   }
+
+  Future<bool> signInAnonymously() async {
+    try {
+      await _supabase.auth.signInAnonymously();
+      return true;
+    } catch (e) {
+      debugPrint('Anonymous sign in failed: $e');
+      return false;
+    }
+  }
   
   Future<void> signOut() async {
     await _supabase.auth.signOut();

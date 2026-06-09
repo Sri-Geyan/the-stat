@@ -7,6 +7,16 @@ import '../models/team_model.dart';
 final teamNotifierProvider =
     AsyncNotifierProvider<TeamNotifier, List<TeamModel>>(TeamNotifier.new);
 
+final allTeamsProvider = FutureProvider<List<TeamModel>>((ref) async {
+  try {
+    final response = await Supabase.instance.client.from('teams').select().order('name');
+    return response.map((t) => TeamModel.fromMap(t)).toList();
+  } catch (e) {
+    debugPrint('Failed to fetch all registered teams: $e');
+    return [];
+  }
+});
+
 class TeamNotifier extends AsyncNotifier<List<TeamModel>> {
   SupabaseClient get _supabase => Supabase.instance.client;
 
@@ -168,10 +178,32 @@ class TeamNotifier extends AsyncNotifier<List<TeamModel>> {
     }
   }
 
+  /// Delete a team (owner only)
+  Future<bool> deleteTeam(String teamId) async {
+    try {
+      final currentUserId = _supabase.auth.currentUser?.id;
+      if (currentUserId == null) return false;
+
+      // Delete members first
+      await _supabase.from('team_members').delete().eq('team_id', teamId);
+      // Delete the team
+      await _supabase.from('teams').delete().eq('id', teamId).eq('owner_id', currentUserId);
+
+      // Refresh state
+      state = AsyncData(await fetchMyTeams());
+      ref.invalidate(allTeamsProvider);
+      return true;
+    } catch (e) {
+      debugPrint('Failed to delete team: $e');
+      return false;
+    }
+  }
+
   /// Refresh teams
   Future<void> refresh() async {
     state = const AsyncLoading();
     state = AsyncData(await fetchMyTeams());
+    ref.invalidate(allTeamsProvider);
   }
 
   /// Generate a short random invite code (6 chars, uppercase alphanumeric)

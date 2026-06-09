@@ -309,7 +309,7 @@
 
   <script>
     // Injected by flutter build
-    const serviceWorkerVersion = "1623024907";
+    const serviceWorkerVersion = "282868031";
   </script>
   <script src="flutter.js" defer></script>
 </head>
@@ -397,14 +397,18 @@
 
       // 2. Initialize Flutter Web engine
       _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
         onEntrypointLoaded: function(engineInitializer) {
           document.querySelector('.loading-text').innerText = 'Starting Engine...';
           engineInitializer.initializeEngine().then(function(appRunner) {
             document.querySelector('.loading-text').innerText = 'Initializing Views...';
             appRunner.runApp();
+            // Hide the loading overlay so the Flutter app becomes visible
+            setTimeout(function() {
+              const loader = document.getElementById('loading-indicator');
+              if (loader) {
+                loader.style.display = 'none';
+              }
+            }, 800);
           });
         }
       });

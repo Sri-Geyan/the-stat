@@ -12,6 +12,8 @@ class SupabaseSyncService {
       // Remove nested lists to keep the matches table purely relational
       matchMap.remove('balls');
       matchMap.remove('innings1BallHistory');
+      matchMap.remove('teamAPlayers');
+      matchMap.remove('teamBPlayers');
       
       // 1. Upsert the Match
       await _supabase.from('matches').upsert(matchMap);

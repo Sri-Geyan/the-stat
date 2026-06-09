@@ -45,6 +45,8 @@ void main() {
     final tempDir = await Directory.systemTemp.createTemp('the_stat_widget_test');
     Hive.init(tempDir.path);
     await Hive.openBox(HiveRegistry.matchesBoxName);
+    await Hive.openBox(HiveRegistry.teamLogosBoxName);
+    await Hive.openBox(HiveRegistry.tournamentLogosBoxName);
 
     try {
       await Supabase.initialize(

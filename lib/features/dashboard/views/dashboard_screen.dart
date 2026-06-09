@@ -8,6 +8,9 @@ import '../../../core/storage/hive_registry.dart';
 import '../../scoring/views/scoring_screen.dart';
 import '../../scorecard/views/scorecard_screen.dart';
 import '../../profile/views/profile_screen.dart';
+import '../../teams/models/team_model.dart';
+import '../../teams/controllers/team_notifier.dart';
+import '../../scoring/views/select_squads_screen.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -17,11 +20,8 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  final _teamAController = TextEditingController(text: 'Chennai Super Kings');
-  final _teamBController = TextEditingController(text: 'Mumbai Indians');
-  final _striker1Controller = TextEditingController(text: 'Opener 1');
-  final _striker2Controller = TextEditingController(text: 'Opener 2');
-  final _bowler1Controller = TextEditingController(text: 'Bowler 1');
+  TeamModel? _selectedTeamA;
+  TeamModel? _selectedTeamB;
   String _format = 'T20';
   int _overs = 20;
   String _tossWinner = 'teamA';
@@ -29,11 +29,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   @override
   void dispose() {
-    _teamAController.dispose();
-    _teamBController.dispose();
-    _striker1Controller.dispose();
-    _striker2Controller.dispose();
-    _bowler1Controller.dispose();
     super.dispose();
   }
 
@@ -78,9 +73,63 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     const SizedBox(height: 20),
                     _buildSectionLabel('TEAMS'),
                     const SizedBox(height: 8),
-                    _buildTextField(_teamAController, 'TEAM A (HOME)'),
-                    const SizedBox(height: 12),
-                    _buildTextField(_teamBController, 'TEAM B (AWAY)'),
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final teamsAsync = ref.watch(allTeamsProvider);
+                        return teamsAsync.when(
+                          loading: () => const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: CircularProgressIndicator(color: AppColors.primaryYellow),
+                            ),
+                          ),
+                          error: (err, _) => Text(
+                            'Error loading teams: $err',
+                            style: const TextStyle(color: AppColors.red, fontSize: 12),
+                          ),
+                          data: (teams) {
+                            if (teams.isEmpty) {
+                              return const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8.0),
+                                child: Text(
+                                  'NO REGISTERED TEAMS. PLEASE CREATE TEAMS FIRST.',
+                                  style: TextStyle(color: AppColors.primaryYellow, fontSize: 11, fontWeight: FontWeight.bold),
+                                ),
+                              );
+                            }
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _buildTeamDropdown(
+                                  label: 'TEAM A (HOME)',
+                                  value: _selectedTeamA,
+                                  items: teams,
+                                  onChanged: (val) {
+                                    setModalState(() {
+                                      _selectedTeamA = val;
+                                      if (_selectedTeamB?.id == val?.id) {
+                                        _selectedTeamB = null;
+                                      }
+                                    });
+                                  },
+                                ),
+                                const SizedBox(height: 12),
+                                _buildTeamDropdown(
+                                  label: 'TEAM B (AWAY / OPPONENT)',
+                                  value: _selectedTeamB,
+                                  items: teams.where((t) => t.id != _selectedTeamA?.id).toList(),
+                                  onChanged: (val) {
+                                    setModalState(() {
+                                      _selectedTeamB = val;
+                                    });
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
                     const SizedBox(height: 16),
                     Row(
                       children: [
@@ -92,7 +141,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               const SizedBox(height: 8),
                               _buildDropdown<String>(
                                 value: _format,
-                                items: const ['Gully T5', 'Gully T8', 'Box Cricket T6', 'Corporate T10', 'T20', 'ODI'],
+                                items: const ['Gully T5', 'Gully T8', 'Box Cricket T6', 'Corporate T10', 'T15', 'T20', 'ODI'],
                                 onChanged: (val) {
                                   if (val != null) {
                                     setModalState(() {
@@ -105,6 +154,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                         _overs = 6;
                                       } else if (val == 'Corporate T10') {
                                         _overs = 10;
+                                      } else if (val == 'T15') {
+                                        _overs = 15;
                                       } else if (val == 'T20') {
                                         _overs = 20;
                                       } else {
@@ -126,7 +177,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               const SizedBox(height: 8),
                               _buildDropdown<int>(
                                 value: _overs,
-                                items: const [5, 6, 8, 10, 20, 50],
+                                items: const [5, 6, 8, 10, 15, 20, 50],
                                 onChanged: (val) {
                                   if (val != null) {
                                     setModalState(() => _overs = val);
@@ -180,35 +231,34 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    _buildSectionLabel('OPENING PLAYERS'),
-                    const SizedBox(height: 8),
-                    _buildTextField(_striker1Controller, 'STRIKER (BATTER 1)'),
-                    const SizedBox(height: 10),
-                    _buildTextField(_striker2Controller, 'NON-STRIKER (BATTER 2)'),
-                    const SizedBox(height: 10),
-                    _buildTextField(_bowler1Controller, 'OPENING BOWLER'),
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () {
-                        ref.read(scoringProvider.notifier).startNewMatchWithPlayers(
-                              teamA: _teamAController.text.trim().isEmpty ? 'Team A' : _teamAController.text.trim(),
-                              teamB: _teamBController.text.trim().isEmpty ? 'Team B' : _teamBController.text.trim(),
+                        if (_selectedTeamA == null || _selectedTeamB == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Please select both Home and Away teams.'),
+                              backgroundColor: AppColors.red,
+                            ),
+                          );
+                          return;
+                        }
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => SelectSquadsScreen(
+                              teamA: _selectedTeamA!,
+                              teamB: _selectedTeamB!,
                               format: _format,
                               overs: _overs,
                               tossWinner: _tossWinner,
                               tossChoice: _tossChoice,
-                              striker: _striker1Controller.text.trim().isEmpty ? 'Striker' : _striker1Controller.text.trim(),
-                              nonStriker: _striker2Controller.text.trim().isEmpty ? 'Non-Striker' : _striker2Controller.text.trim(),
-                              bowler: _bowler1Controller.text.trim().isEmpty ? 'Bowler' : _bowler1Controller.text.trim(),
-                            );
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const ScoringScreen()),
+                            ),
+                          ),
                         ).then((_) => setState(() {}));
                       },
-                      child: const Text("LET'S PLAY  →"),
+                      child: const Text("CHOOSE SQUADS  →"),
                     ),
                     const SizedBox(height: 8),
                   ],
@@ -231,6 +281,48 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         fontWeight: FontWeight.w700,
         letterSpacing: 1.2,
       ),
+    );
+  }
+
+  Widget _buildTeamDropdown({
+    required String label,
+    required TeamModel? value,
+    required List<TeamModel> items,
+    required ValueChanged<TeamModel?> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildSectionLabel(label),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: const BoxDecoration(
+            color: AppColors.black,
+            border: Border.fromBorderSide(BorderSide(color: AppColors.white, width: 1.5)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<TeamModel>(
+              value: value,
+              dropdownColor: AppColors.black,
+              iconEnabledColor: AppColors.primaryYellow,
+              isExpanded: true,
+              hint: const Text(
+                'Select Registered Team',
+                style: TextStyle(color: Color(0xFF888888), fontSize: 13, fontFamily: 'DM Sans'),
+              ),
+              style: const TextStyle(color: AppColors.white, fontFamily: 'DM Sans'),
+              items: items.map((team) {
+                return DropdownMenuItem<TeamModel>(
+                  value: team,
+                  child: Text(team.name),
+                );
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

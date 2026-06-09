@@ -26,11 +26,17 @@ class ScoringNotifier extends StateNotifier<MatchState?> {
     required String tossChoice,
   }) {
     startNewMatchWithPlayers(
-      teamA: teamA, teamB: teamB, format: format, overs: overs,
-      tossWinner: tossWinner, tossChoice: tossChoice,
+      teamA: teamA,
+      teamB: teamB,
+      format: format,
+      overs: overs,
+      tossWinner: tossWinner,
+      tossChoice: tossChoice,
       striker: '$teamA Batter 1',
       nonStriker: '$teamA Batter 2',
       bowler: '$teamB Bowler 1',
+      teamAPlayers: const [],
+      teamBPlayers: const [],
     );
   }
 
@@ -44,6 +50,8 @@ class ScoringNotifier extends StateNotifier<MatchState?> {
     required String striker,
     required String nonStriker,
     required String bowler,
+    required List<String> teamAPlayers,
+    required List<String> teamBPlayers,
   }) {
     final id = const Uuid().v4();
 
@@ -67,6 +75,8 @@ class ScoringNotifier extends StateNotifier<MatchState?> {
       balls: [],
       winner: '',
       margin: '',
+      teamAPlayers: teamAPlayers,
+      teamBPlayers: teamBPlayers,
     );
 
     state = newMatch;
@@ -117,6 +127,7 @@ class ScoringNotifier extends StateNotifier<MatchState?> {
     // Determine state variables
     String nextStriker = preBallStriker;
     String nextNonStriker = preBallNonStriker;
+    String nextBowler = current.bowlerId;
     int nextInnings = current.currentInnings;
     String nextStatus = current.status;
     int nextInnings1Runs = current.innings1Runs;
@@ -130,8 +141,7 @@ class ScoringNotifier extends StateNotifier<MatchState?> {
     int wicketsCount = updatedBalls.where((b) => b.isWicket).length;
     if (isWicket) {
       if (wicketsCount < 10) {
-        // Replace the striker with a new batsman (mock ID/name)
-        nextStriker = 'Batter ${wicketsCount + 2}';
+        nextStriker = current.teamAPlayers.isEmpty ? 'Batter ${wicketsCount + 2}' : 'Select Batter';
       }
     }
 
@@ -152,6 +162,8 @@ class ScoringNotifier extends StateNotifier<MatchState?> {
       final temp = nextStriker;
       nextStriker = nextNonStriker;
       nextNonStriker = temp;
+      
+      nextBowler = current.teamAPlayers.isEmpty ? nextBowler : 'Select Bowler';
     }
 
     // Better logic for chase completion:
@@ -181,8 +193,10 @@ class ScoringNotifier extends StateNotifier<MatchState?> {
 
         final bowlingTeamInnings2 = battingTeamInnings2 == current.teamAName ? current.teamBName : current.teamAName;
 
-        nextStriker = '$battingTeamInnings2 Batter 1';
-        nextNonStriker = '$battingTeamInnings2 Batter 2';
+        nextStriker = current.teamAPlayers.isEmpty ? '$battingTeamInnings2 Batter 1' : 'Select Batter';
+        nextNonStriker = current.teamAPlayers.isEmpty ? '$battingTeamInnings2 Batter 2' : 'Select Batter';
+        final nextBowlerInnings2 = current.teamAPlayers.isEmpty ? '$bowlingTeamInnings2 Bowler 1' : 'Select Bowler';
+
         state = current.copyWith(
           currentInnings: nextInnings,
           innings1Runs: nextInnings1Runs,
@@ -192,7 +206,7 @@ class ScoringNotifier extends StateNotifier<MatchState?> {
           balls: [],
           strikerId: nextStriker,
           nonStrikerId: nextNonStriker,
-          bowlerId: '$bowlingTeamInnings2 Bowler 1',
+          bowlerId: nextBowlerInnings2,
         );
         HiveRegistry.saveMatch(state!);
         return;
@@ -222,6 +236,7 @@ class ScoringNotifier extends StateNotifier<MatchState?> {
       balls: updatedBalls,
       strikerId: nextStriker,
       nonStrikerId: nextNonStriker,
+      bowlerId: nextBowler,
       status: nextStatus,
       winner: nextWinner,
       margin: nextMargin,
@@ -258,10 +273,18 @@ class ScoringNotifier extends StateNotifier<MatchState?> {
     final updatedBalls = [...current.balls];
     final popped = updatedBalls.removeLast();
 
+    String nextBowler = current.bowlerId;
+    if (updatedBalls.isNotEmpty) {
+      nextBowler = updatedBalls.last.bowlerId;
+    } else {
+      nextBowler = popped.bowlerId;
+    }
+
     final updatedState = current.copyWith(
       balls: updatedBalls,
       strikerId: popped.preBallStrikerId,
       nonStrikerId: popped.preBallNonStrikerId,
+      bowlerId: nextBowler,
       status: 'live', // In case it was completed
       winner: '',
       margin: '',
@@ -269,6 +292,19 @@ class ScoringNotifier extends StateNotifier<MatchState?> {
 
     state = updatedState;
     HiveRegistry.saveMatch(updatedState);
+  }
+
+  void chooseNextBatter(String name) {
+    final current = state;
+    if (current == null) return;
+    if (current.strikerId == 'Select Batter') {
+      state = current.copyWith(strikerId: name);
+    } else if (current.nonStrikerId == 'Select Batter') {
+      state = current.copyWith(nonStrikerId: name);
+    } else {
+      state = current.copyWith(strikerId: name);
+    }
+    HiveRegistry.saveMatch(state!);
   }
 
   void switchStriker() {

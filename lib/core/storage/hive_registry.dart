@@ -4,10 +4,14 @@ import 'supabase_sync_service.dart';
 
 class HiveRegistry {
   static const String matchesBoxName = 'matches';
+  static const String teamLogosBoxName = 'team_logos';
+  static const String tournamentLogosBoxName = 'tournament_logos';
 
   static Future<void> init() async {
     await Hive.initFlutter();
     await Hive.openBox(matchesBoxName);
+    await Hive.openBox(teamLogosBoxName);
+    await Hive.openBox(tournamentLogosBoxName);
   }
 
   static Box get matchesBox => Hive.box(matchesBoxName);

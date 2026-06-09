@@ -1,5 +1,75 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/theme.dart';
+import '../../../core/storage/hive_registry.dart';
+
+const _teamEmojis = ['🏏', '🦁', '🐯', '🦅', '⚡', '👑', '🔥', '🐺', '⚔️', '🛡️', '🦈', '🦖'];
+const _tournamentEmojis = ['🏆', '🏅', '🎖️', '👑', '🏏', '🌟', '💥', '🔥', '🎯', '🚩'];
+
+String getCleanName(String name) {
+  final emojis = [..._teamEmojis, ..._tournamentEmojis];
+  for (final emoji in emojis) {
+    if (name.startsWith('$emoji ')) {
+      return name.substring(emoji.length + 1);
+    }
+    if (name.startsWith(emoji)) {
+      return name.substring(emoji.length);
+    }
+  }
+  return name;
+}
+
+Widget _buildTournamentLogo(String name, {double size = 44, double fontSize = 18}) {
+  final cleanName = getCleanName(name);
+  final box = Hive.box(HiveRegistry.tournamentLogosBoxName);
+  final logoBase64 = box.get(cleanName) as String?;
+
+  if (logoBase64 != null && logoBase64.isNotEmpty) {
+    try {
+      final bytes = base64Decode(logoBase64);
+      return Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.primaryYellow, width: 1.5),
+          color: AppColors.black,
+        ),
+        child: Image.memory(
+          bytes,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _buildLetterFallback(cleanName, size, fontSize),
+        ),
+      );
+    } catch (_) {
+      return _buildLetterFallback(cleanName, size, fontSize);
+    }
+  }
+  return _buildLetterFallback(cleanName, size, fontSize);
+}
+
+Widget _buildLetterFallback(String cleanName, double size, double fontSize) {
+  final letter = cleanName.trim().isNotEmpty ? cleanName.trim()[0].toUpperCase() : '?';
+  return Container(
+    width: size,
+    height: size,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: AppColors.black,
+      border: Border.all(color: AppColors.white, width: 1.5),
+    ),
+    child: Text(
+      letter,
+      style: TextStyle(
+        color: AppColors.primaryYellow,
+        fontWeight: FontWeight.bold,
+        fontSize: fontSize,
+        fontFamily: 'Rajdhani',
+      ),
+    ),
+  );
+}
 
 class TournamentsScreen extends StatefulWidget {
   const TournamentsScreen({super.key});
@@ -30,14 +100,15 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
       format: 'Box Cricket T6',
       teams: ['Blue Smashers', 'Red Rockets', 'Green Giants', 'Golden Hawks'],
       status: 'Completed',
-      startDate: '10 May 2024',
+      startDate: '20 May 2024',
     ),
   ];
 
   void _showCreateTournamentDialog() {
     final nameCtrl = TextEditingController();
     String format = 'T20';
-
+    String? selectedLogoBase64;
+ 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -48,6 +119,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
       ),
       builder: (ctx) {
         return StatefulBuilder(builder: (context, setModal) {
+          final name = nameCtrl.text.trim();
           return Padding(
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom + 24,
@@ -75,6 +147,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                   child: TextField(
                     controller: nameCtrl,
                     style: const TextStyle(color: AppColors.white, fontFamily: 'DM Sans'),
+                    onChanged: (val) => setModal(() {}),
                     decoration: const InputDecoration(
                       hintText: 'e.g. Chennai Premier League',
                       hintStyle: TextStyle(color: Color(0xFF888888), fontFamily: 'DM Sans', fontSize: 13),
@@ -82,6 +155,78 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                       border: InputBorder.none,
                     ),
                   ),
+                ),
+                const SizedBox(height: 16),
+                const Text('LOGO PREVIEW', style: TextStyle(color: AppColors.primaryYellow, fontFamily: 'DM Sans', fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.primaryYellow, width: 2),
+                        color: AppColors.black,
+                      ),
+                      child: selectedLogoBase64 != null
+                          ? Image.memory(
+                              base64Decode(selectedLogoBase64!),
+                              fit: BoxFit.cover,
+                            )
+                          : Center(
+                              child: Text(
+                                name.isNotEmpty ? name[0].toUpperCase() : '?',
+                                style: const TextStyle(
+                                  color: AppColors.primaryYellow,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Rajdhani',
+                                ),
+                              ),
+                            ),
+                    ),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryYellow,
+                            foregroundColor: AppColors.black,
+                          ),
+                          onPressed: () async {
+                            final picker = ImagePicker();
+                            final image = await picker.pickImage(
+                              source: ImageSource.gallery,
+                              maxWidth: 400,
+                              maxHeight: 400,
+                            );
+                            if (image != null) {
+                              final bytes = await image.readAsBytes();
+                              setModal(() {
+                                selectedLogoBase64 = base64Encode(bytes);
+                              });
+                            }
+                          },
+                          child: const Text('PICK IMAGE  📸'),
+                        ),
+                        if (selectedLogoBase64 != null) ...[
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: () {
+                              setModal(() {
+                                selectedLogoBase64 = null;
+                              });
+                            },
+                            child: const Text(
+                              'REMOVE IMAGE',
+                              style: TextStyle(color: AppColors.red),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 const Text('FORMAT', style: TextStyle(color: AppColors.primaryYellow, fontFamily: 'DM Sans', fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
@@ -108,11 +253,16 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (nameCtrl.text.trim().isNotEmpty) {
+                      final rawName = nameCtrl.text.trim();
+                      if (selectedLogoBase64 != null) {
+                        final box = Hive.box(HiveRegistry.tournamentLogosBoxName);
+                        await box.put(rawName, selectedLogoBase64);
+                      }
                       setState(() {
                         _tournaments.insert(0, _Tournament(
-                          name: nameCtrl.text.trim(),
+                          name: rawName,
                           format: format,
                           teams: [],
                           status: 'Upcoming',
@@ -128,6 +278,68 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
             ),
           );
         });
+      },
+    );
+  }
+
+  void _confirmDeleteTournament(int index) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: AppColors.black,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero,
+            side: BorderSide(color: AppColors.primaryYellow, width: 2),
+          ),
+          title: Row(
+            children: [
+              const Icon(Icons.warning, color: AppColors.red),
+              const SizedBox(width: 10),
+              Text(
+                'DELETE TOURNAMENT',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: AppColors.red),
+              ),
+            ],
+          ),
+          content: Text(
+            'Are you sure you want to delete the tournament "${_tournaments[index].name}"? This will permanently delete it.',
+            style: const TextStyle(
+              color: AppColors.white,
+              fontFamily: 'DM Sans',
+            ),
+          ),
+          actions: [
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.white,
+                side: const BorderSide(color: AppColors.white, width: 1.5),
+              ),
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('CANCEL'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.red,
+                foregroundColor: AppColors.white,
+                side: const BorderSide(color: AppColors.black, width: 1.5),
+              ),
+              onPressed: () {
+                setState(() {
+                  _tournaments.removeAt(index);
+                });
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Tournament deleted successfully.'),
+                    backgroundColor: AppColors.primaryGreen,
+                  ),
+                );
+              },
+              child: const Text('DELETE'),
+            ),
+          ],
+        );
       },
     );
   }
@@ -196,7 +408,17 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(t.format.toUpperCase(), style: const TextStyle(color: AppColors.primaryYellow, fontFamily: 'DM Sans', fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                  Row(
+                    children: [
+                      Text(t.format.toUpperCase(), style: const TextStyle(color: AppColors.primaryYellow, fontFamily: 'DM Sans', fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => _confirmDeleteTournament(index),
+                        child: const Icon(Icons.delete, color: AppColors.red, size: 16),
+                      ),
+                    ],
+                  ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     color: statusColor,
@@ -210,7 +432,21 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(t.name, style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: AppColors.white)),
+                  Row(
+                    children: [
+                      _buildTournamentLogo(t.name),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          getCleanName(t.name).toUpperCase(),
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(color: AppColors.white),
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
