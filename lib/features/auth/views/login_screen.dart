@@ -19,11 +19,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final success = await ref.read(authNotifierProvider).signInWithGoogle();
     
     if (mounted) {
-      setState(() => _isLoading = false);
+      // On web, signInWithOAuth triggers a redirect — the page will navigate
+      // away, so there's nothing to reset. Only show an error if the redirect
+      // itself failed to initiate (success == false and we're still mounted).
       if (!success) {
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Failed to sign in. Please try again.'),
+            content: Text('Failed to sign in with Google. Please try again.'),
             backgroundColor: AppColors.red,
           ),
         );
@@ -39,8 +42,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (!success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Failed to sign in as guest. Please try again.'),
+            content: Text(
+              'Guest sign-in is not enabled. Please enable anonymous sign-ins '
+              'in the Supabase dashboard, or sign in with Google.',
+            ),
             backgroundColor: AppColors.red,
+            duration: Duration(seconds: 5),
           ),
         );
       }
