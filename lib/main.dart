@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/storage/hive_registry.dart';
@@ -11,13 +12,25 @@ import 'features/profile/views/profile_setup_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  debugPrint('[main] Initializing Hive...');
   await HiveRegistry.init();
+  debugPrint('[main] Hive initialized.');
 
-  await Supabase.initialize(
-    url: 'https://atutqoiqvcojambboakw.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0dXRxb2lxdmNvamFtYmJvYWt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4ODg5ODAsImV4cCI6MjA5NjQ2NDk4MH0.VPKxrbqOTF6yVe2ep5vXtKGjzPEYB1C4Nappl8pU7lo',
-  );
+  debugPrint('[main] Initializing Supabase...');
+  try {
+    await Supabase.initialize(
+      url: 'https://atutqoiqvcojambboakw.supabase.co',
+      anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0dXRxb2lxdmNvamFtYmJvYWt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4ODg5ODAsImV4cCI6MjA5NjQ2NDk4MH0.VPKxrbqOTF6yVe2ep5vXtKGjzPEYB1C4Nappl8pU7lo',
+    );
+    debugPrint('[main] Supabase initialized successfully.');
+  } catch (e) {
+    debugPrint('[main] Supabase initialization error: $e');
+    // Continue anyway — the app can still show the login screen
+    // and retry auth when the user clicks a button.
+  }
 
+  debugPrint('[main] Starting app...');
   runApp(
     const ProviderScope(
       child: TheStatApp(),
@@ -74,15 +87,11 @@ class AuthGuard extends ConsumerWidget {
           child: CircularProgressIndicator(color: AppColors.primaryYellow),
         ),
       ),
-      error: (e, st) => Scaffold(
-        backgroundColor: AppColors.primaryGreen,
-        body: Center(
-          child: Text(
-            'Error loading auth state: $e',
-            style: const TextStyle(color: AppColors.primaryYellow),
-          ),
-        ),
-      ),
+      error: (e, st) {
+        debugPrint('[AuthGuard] Auth stream error: $e');
+        // On error, show the login screen so the user can still try to sign in
+        return const LoginScreen();
+      },
     );
   }
 }

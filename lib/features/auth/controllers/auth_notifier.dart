@@ -3,9 +3,19 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
 
-// Provides the current authenticated user (or null if not logged in)
-final authStateProvider = StreamProvider<User?>((ref) {
-  return Supabase.instance.client.auth.onAuthStateChange.map((event) => event.session?.user);
+// Provides the current authenticated user (or null if not logged in).
+// Emits the current session user immediately, then listens for changes.
+final authStateProvider = StreamProvider<User?>((ref) async* {
+  final supabase = Supabase.instance.client;
+  
+  // Immediately yield the current session state so the UI doesn't hang
+  // waiting for the first stream event.
+  yield supabase.auth.currentSession?.user;
+  
+  // Then forward all auth state changes.
+  await for (final event in supabase.auth.onAuthStateChange) {
+    yield event.session?.user;
+  }
 });
 
 final authNotifierProvider = Provider<AuthNotifier>((ref) {
